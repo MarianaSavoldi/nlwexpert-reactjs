@@ -7,6 +7,8 @@ interface NewNoteCardProps {
   onCreateNewNote: (content: string) => void;
 }
 
+let speechRecognition: SpeechRecognition | null = null;
+
 export function NewNoteCard({ onCreateNewNote }: NewNoteCardProps) {
   const [shouldShowOnboarding, setShouldShowOnboarding] = useState(true);
   const [content, setContent] = useState('');
@@ -25,6 +27,9 @@ export function NewNoteCard({ onCreateNewNote }: NewNoteCardProps) {
 
   const handleSaveNote = (event: FormEvent) => {
     event.preventDefault();
+    if (content === '') {
+      return;
+    }
     onCreateNewNote(content);
     setContent('');
     setShouldShowOnboarding(true);
@@ -32,11 +37,41 @@ export function NewNoteCard({ onCreateNewNote }: NewNoteCardProps) {
   };
 
   const handleStartRecordingNote = () => {
+    const isSpeechRecognitionApiAvailable = 'SpeechRecognition' in window
+      || 'webkitSpeechRecognition' in window;
+
+    if (!isSpeechRecognitionApiAvailable) {
+      alert('Infelizmente seu navegador não suporta fazer gravações de áudio :(');
+      return;
+    }
+
     setIsRecording(true);
+    setShouldShowOnboarding(false);
+
+    const SpeechRecognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    speechRecognition = new SpeechRecognitionApi();
+    speechRecognition.lang = 'pt-BR';
+    speechRecognition.continuous = true;
+    speechRecognition.maxAlternatives = 1;
+    speechRecognition.interimResults = true;
+    speechRecognition.onresult = (event) => {
+      const transcription = Array.from(event.results).reduce((text, result) => {
+        return text.concat(result[0].transcript);
+      }, '');
+      setContent(transcription);
+    };
+    speechRecognition.onerror = (event) => {
+      console.error(event);
+    };
+    speechRecognition.start();
   };
 
   const handleStopRecordingNote = () => {
     setIsRecording(false);
+    if (speechRecognition !== null) {
+      speechRecognition.stop();
+    }
   };
 
   return (
