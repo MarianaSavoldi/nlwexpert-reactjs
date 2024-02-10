@@ -10,6 +10,7 @@ interface NewNoteCardProps {
 export function NewNoteCard({ onCreateNewNote }: NewNoteCardProps) {
   const [shouldShowOnboarding, setShouldShowOnboarding] = useState(true);
   const [content, setContent] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
 
   const handleCreateTextNote = () => {
     setShouldShowOnboarding(false);
@@ -30,6 +31,14 @@ export function NewNoteCard({ onCreateNewNote }: NewNoteCardProps) {
     toast.success('Nota criada com sucesso');
   };
 
+  const handleStartRecordingNote = () => {
+    setIsRecording(true);
+  };
+
+  const handleStopRecordingNote = () => {
+    setIsRecording(false);
+  };
+
   return (
     <Dialog.Root>
       <Dialog.Trigger className='flex flex-col rounded-md text-left bg-slate-700 p-5 gap-3 outline-none hover:ring-2 hover:ring-slate-600 focus-visible:ring-2 focus-visible:ring-lime-400'>
@@ -45,10 +54,7 @@ export function NewNoteCard({ onCreateNewNote }: NewNoteCardProps) {
           <Dialog.Close className='absolute right-0 top-0 bg-slate-800 p-1.5 text-slate-400 hover:text-slate-100'>
             <X className='size-5' />
           </Dialog.Close>
-          <form
-            onSubmit={ handleSaveNote }
-            className='flex flex-1 flex-col'
-          >
+          <form className='flex flex-1 flex-col'>
             <div className='flex flex-1 flex-col gap-3 p-5'>
               <span className='text-sm font-medium text-slate-300'>
                 Adicionar nota
@@ -56,9 +62,16 @@ export function NewNoteCard({ onCreateNewNote }: NewNoteCardProps) {
               { shouldShowOnboarding ? (
                 <p className='text-sm leading-6 text-slate-400'>
                   Comece { ' ' }
-                  <button className='font-medium text-lime-400 hover:underline'>gravando uma nota</button>  { ' ' }
+                  <button
+                    type='button'
+                    className='font-medium text-lime-400 hover:underline'
+                    onClick={ handleStartRecordingNote }
+                  >
+                    gravando uma nota
+                  </button>  { ' ' }
                   em áudio ou se preferir { ' ' }
                   <button
+                    type='button'
                     className='font-medium text-lime-400 hover:underline'
                     onClick={ handleCreateTextNote }
                   >
@@ -75,12 +88,26 @@ export function NewNoteCard({ onCreateNewNote }: NewNoteCardProps) {
               }
 
             </div>
-            <button
-              type='submit'
-              className='w-full bg-lime-400 py-4 text-center text-sm text-lime-950 outline-none font-medium hover:bg-lime-500'
-            >
-              Salvar nota
-            </button>
+
+            { isRecording ? (
+              <button
+                type='button'
+                className='w-full flex items-center justify-center gap-2 bg-slate-900 py-4 text-center text-sm text-slate-300 outline-none font-medium hover:text-slate-100'
+                onClick={ handleStopRecordingNote }
+              >
+                <div className='size-3 rounded-full bg-red-500 animate-pulse' />
+                Gravando... (clique para interromper)
+              </button>
+            ) :
+              <button
+                type='button'
+                className='w-full bg-lime-400 py-4 text-center text-sm text-lime-950 outline-none font-medium hover:bg-lime-500'
+                onClick={ handleSaveNote }
+              >
+                Salvar nota
+              </button>
+            }
+
           </form>
         </Dialog.Content>
       </Dialog.Portal>
